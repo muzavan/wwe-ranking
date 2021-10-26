@@ -13,11 +13,15 @@ The assumption and rule applied to this ranking are determined as follows.
 
 - DQ and Non Finish will be considered as draw
 
-- A match with multiple participant at the same time will be considered as multiple match that consist of the winner and the losers. For example, if there is a Triple Threat Match betweem A, B, and C with B winning, the rating will be updated as if we have two match: A vs C(winner) and B vs C(winner). Note that Gauntlet match will be considered as a normal match since only two competitors wrestle at the same time.
+- A match with multiple participant, the rating will be updated based on the average expectation from the participant rating and average of other participant rating. For example, if we have Triple Threat for A, B, C. The rating and expecation will counted with (Rc, avg(Ra, Rb)), (Rb, avg(Ra, Rc)), (Rc, avg(Ra, Rb)) | TODO: Find a better way or justification?
+
+- Note that Gauntlet match will be considered as a normal match since only two competitors wrestle at the same time.
 
 - Only televised match (including PPV) are considered to update the ranking. Meaning that the ranking will be updated after RAW, Smackdown, and PPV (for now, I will exclude NXT since I do not follow it closely, help appreciated :p)
 
-- Each tag team / faction / stable members will have their own rating. So, the rating for them might be different (since sometimes they book a 1-on-1 match to serve the feud)
+- Each tag team / faction / stable members will have their own rating. So, the rating for them might be different (since sometimes they book a 1-on-1 match to serve the feud).
+
+- Squash matches with unamed jobbers will be ignored (since the jobbers, ideally, has 0 rating anyway)
 
 - These assumptions and rule might be updated later. I create this just for fun, do not take it seriously! In the end, WWE product is a form of entertainment. We seek a pleasure by watching/discussing it.
 

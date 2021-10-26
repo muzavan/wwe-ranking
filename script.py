@@ -48,9 +48,14 @@ def update_from_episode(episode_file: str, latest_rating: Mapping[str, Wrestler]
         for r in reader:
             winners = r["winners"].strip().split("&")
             losers = r["losers"].strip().split("&")
+            is_tag_team = r["is_tag_team"] == 1
+            skipped = r["skipped"] == 1 # will increment total match, does not affect score
 
             for w_name in winners:
                 for l_name in losers:
+                    w_name = w_name.strip()
+                    l_name = l_name.strip()
+
                     if w_name not in latest_rating:
                         print("Unregonized wrestler:", w_name)
                         exit()
@@ -61,7 +66,13 @@ def update_from_episode(episode_file: str, latest_rating: Mapping[str, Wrestler]
                     winner = latest_rating[w_name]
                     loser = latest_rating[l_name]
 
-                    update(winner, loser)
+                    if not skipped:
+                        update(winner, loser)
+                        winner.win += 1
+                        loser.loss += 1
+
+                    winner.total += 1
+                    loser.total += 1
 
     
 
