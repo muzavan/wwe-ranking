@@ -1,8 +1,9 @@
 import csv
 from dataclasses import dataclass
+from enum import IntEnum
 import math
 import sys
-from typing import Mapping
+from typing import List, Mapping, Tuple
 
 @dataclass
 class Wrestler:
@@ -13,18 +14,29 @@ class Wrestler:
     loss: int
     total: int
 
+class Result(IntEnum):
+    LOSS = 0
+    DRAW = 1
+    WIN = 2
+
+    def score(self) -> float:
+        return float(self) // float(Result.WIN)
+
+
 # Use the same as chess?
 K_FACTOR = 24
 
 def expectation(r1, r2):
     return (1.0 / (1.0 + math.pow(10, r2 - r1)/400))
 
-def update(winner: Wrestler, loser: Wrestler):
-    e_win = expectation(winner.rating, loser.rating)
-    e_loss = expectation(loser.rating, winner.rating)
+def update_wrestler(w: Wrestler, own_rating: float, opponent_rating: float, result: Result):
+    e = expectation(own_rating, opponent_rating)
+    w.rating = (w.rating + K_FACTOR * (result.score() - e))
 
-    winner.rating = (winner.rating + K_FACTOR * (1 - e_win))
-    loser.rating = (loser.rating + K_FACTOR * (0 - e_loss))
+    if result == Result.WIN:
+        w.win += 1
+    if result == Result.LOSS:
+        w.loss += 1
 
 LATEST_RATING_CSV = "latest_rating.csv"
 def get_latest_rating() -> Mapping[str, Wrestler]:
@@ -42,40 +54,81 @@ def get_latest_rating() -> Mapping[str, Wrestler]:
 
     return wrestlers
 
-def update_from_episode(episode_file: str, latest_rating: Mapping[str, Wrestler]):
-    with open(episode_file, "r") as f:
-        reader = csv.DictReader(f)
-        for r in reader:
-            winners = r["winners"].strip().split("&")
-            losers = r["losers"].strip().split("&")
-            is_tag_team = r["is_tag_team"] == 1
-            skipped = r["skipped"] == 1 # will increment total match, does not affect score
+def extract_winner(winners: List[str], wrestler_map: Mapping[str, Wrestler]) -> Tuple[List[Wrestler], float]:
+    winner_wrestlers = []
+    for w in winners:
+        if w not in wrestler_map:
+            print("Not in the roster:", w)
+            exit()
 
-            for w_name in winners:
-                for l_name in losers:
-                    w_name = w_name.strip()
-                    l_name = l_name.strip()
+        winner_wrestlers.append(wrestler_map[w])
 
-                    if w_name not in latest_rating:
-                        print("Unregonized wrestler:", w_name)
-                        exit()
-                    if l_name not in latest_rating:
-                        print("Unrecognized wrestler:", l_name)
-                        exit()
+    winner_rating = sum([w.rating for w in winner_wrestlers]) / float(len(winner_wrestlers))
 
-                    winner = latest_rating[w_name]
-                    loser = latest_rating[l_name]
+    return winner_wrestlers, winner_rating
 
-                    if not skipped:
-                        update(winner, loser)
-                        winner.win += 1
-                        loser.loss += 1
+def extract_losers(losers: List[str], wrestler_map: Mapping[str, Wrestler], skipped: bool) -> Tuple[List[List[Wrestler]], List[float]]:
+    loser_wrestlers = []
+    loser_ratings = []
 
-                    winner.total += 1
-                    loser.total += 1
+    for l in losers:
+        ls = l.split("&")
+        loser_team = []
+        for ll in ls:
+            ll = ll.strip()
+
+            # jobber can be ignored
+            if ll not in wrestler_map and not skipped:
+                print("Not in the roster:", ll)
+                exit()
+
+            loser_team.append(wrestler_map[ll])
+
+        loser_wrestlers.append(loser_team)
+        loser_ratings.append(sum([w.rating for w in loser_team]) / float(len(loser_team)))
+
+    return loser_wrestlers, loser_ratings
 
     
 
+def update_from_episode(episode_file: str, wrestler_map: Mapping[str, Wrestler]):
+    with open(episode_file, "r") as f:
+        reader = csv.DictReader(f)
+        for r in reader:
+            # Note:
+            # Assumption: winner to losers is one to many
+            # winner/loser is an entity, can be actual user or a team
+
+            winners = r["winners"].strip()
+            losers = r["losers"].strip().split("|")
+
+            winners = list(map(lambda x: x.strip(), winners.split("&")))
+            winner_entity, winner_rating = extract_winner(winners, wrestler_map)
+            
+            skipped = r["skipped"] == 1
+            loser_entities, loser_ratings = extract_losers(losers, wrestler_map, skipped)
+
+            # Update total match
+            for w in winner_entity:
+                w.total += 1
+            
+            for l_entity in loser_entities:
+                for l in l_entity:
+                    l.total += 1
+
+            if skipped:
+                continue
+
+            total_rating = winner_rating + sum(loser_ratings)
+            opponent_num = float(len(loser_ratings))
+            # Update winner
+            for w in winner_entity:
+                update_wrestler(w, winner_rating, (total_rating - winner_rating) / opponent_num, Result.WIN)
+
+            # Update losers
+            for lrating, l_entity in zip(loser_ratings, loser_entities):
+                for ll in l_entity:
+                    update_wrestler(ll, lrating, (total_rating - lrating) / opponent_num, Result.LOSS)
 
 def dump_latest_rating(latest_rating: Mapping[str, Wrestler]):
     wrestlers = []
