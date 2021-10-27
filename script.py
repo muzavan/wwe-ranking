@@ -28,7 +28,7 @@ class Result(IntEnum):
 K_FACTOR = 30
 
 def to_2_decimal(fl: float):
-    return math.round(fl * 100) / 100
+    return float(f"{fl:.2f}")
 
 def expectation(r1, r2):
     return to_2_decimal((1.0 / (1.0 + math.pow(10, r2 - r1)/400)))
