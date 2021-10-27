@@ -17,13 +17,12 @@ class Wrestler:
     total: int
 
 class Result(IntEnum):
-    LOSS = 0
+    LOSE = 0
     DRAW = 1
     WIN = 2
 
     def score(self) -> float:
-        return float(self) // float(Result.WIN)
-
+        return float(self) / float(Result.WIN)
 
 K_FACTOR = 30
 
@@ -31,7 +30,7 @@ def to_2_decimal(fl: float):
     return float(f"{fl:.2f}")
 
 def expectation(r1, r2):
-    return to_2_decimal((1.0 / (1.0 + math.pow(10, r2 - r1)/400)))
+    return 1.0 / (1.0 + math.pow(10, (r2 - r1)/400))
 
 def update_wrestler(w: Wrestler, own_rating: float, opponent_rating: float, result: Result):
     e = expectation(own_rating, opponent_rating)
@@ -39,7 +38,7 @@ def update_wrestler(w: Wrestler, own_rating: float, opponent_rating: float, resu
 
     if result == Result.WIN:
         w.win += 1
-    if result == Result.LOSS:
+    if result == Result.LOSE:
         w.loss += 1
 
 LATEST_RATING_CSV = "latest_rating.csv"
@@ -137,7 +136,7 @@ def update_from_episode(episode_file: str, wrestler_map: Mapping[str, Wrestler])
             # Update losers
             for lrating, l_entity in zip(loser_ratings, loser_entities):
                 for ll in l_entity:
-                    update_wrestler(ll, lrating, (total_rating - lrating) / opponent_num, Result.LOSS)
+                    update_wrestler(ll, lrating, (total_rating - lrating) / opponent_num, Result.LOSE)
 
 def dump_latest_rating(latest_rating: Mapping[str, Wrestler]):
     wrestlers = []
@@ -146,14 +145,14 @@ def dump_latest_rating(latest_rating: Mapping[str, Wrestler]):
 
     wrestlers = sorted(wrestlers, key= lambda w: (w.brand, -w.rating, -w.total, -w.win, w.loss, w.name))
 
-    with open(LATEST_RATING_CSV, "w") as f:
+    with open(LATEST_RATING_CSV+".new", "w") as f:
         writer = csv.writer(f)
         writer.writerow(["name", "rating", "brand", "win", "loss", "total"])
         rows = [(w.name, w.rating, w.brand, w.win, w.loss, w.total) for w in wrestlers]
         writer.writerows(rows)
 
-    archive_file = "archive/%s.%s" % (LATEST_RATING_CSV, datetime.today().strftime("%Y%m%d"))
-    copyfile(LATEST_RATING_CSV, archive_file)
+    # archive_file = "archive/%s.%s" % (LATEST_RATING_CSV, datetime.today().strftime("%Y%m%d"))
+    # copyfile(LATEST_RATING_CSV, archive_file)
     
 
 
