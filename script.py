@@ -1,7 +1,9 @@
 import csv
 from dataclasses import dataclass
+from datetime import datetime
 from enum import IntEnum
 import math
+from shutil import copyfile
 import sys
 from typing import List, Mapping, Tuple
 
@@ -23,15 +25,17 @@ class Result(IntEnum):
         return float(self) // float(Result.WIN)
 
 
-# Use the same as chess?
-K_FACTOR = 24
+K_FACTOR = 30
+
+def to_2_decimal(fl: float):
+    return math.round(fl * 100) / 100
 
 def expectation(r1, r2):
-    return (1.0 / (1.0 + math.pow(10, r2 - r1)/400))
+    return to_2_decimal((1.0 / (1.0 + math.pow(10, r2 - r1)/400)))
 
 def update_wrestler(w: Wrestler, own_rating: float, opponent_rating: float, result: Result):
     e = expectation(own_rating, opponent_rating)
-    w.rating = (w.rating + K_FACTOR * (result.score() - e))
+    w.rating = to_2_decimal((w.rating + K_FACTOR * (result.score() - e)))
 
     if result == Result.WIN:
         w.win += 1
@@ -44,8 +48,8 @@ def get_latest_rating() -> Mapping[str, Wrestler]:
     with open(LATEST_RATING_CSV, "r") as f:
         reader = csv.DictReader(f)
         for r in reader:
-            w = Wrestler(r["name"], r["rating"], r["brand"], 
-                            r["win"], r["loss"], r["total"])
+            w = Wrestler(r["name"], float(r["rating"]), r["brand"], 
+                            int(r["win"]), int(r["loss"]), int(r["total"]))
 
             if w.name in wrestlers:
                 print("Duplicate wrestler:", w.name)
@@ -77,15 +81,20 @@ def extract_losers(losers: List[str], wrestler_map: Mapping[str, Wrestler], skip
         for ll in ls:
             ll = ll.strip()
 
-            # jobber can be ignored
-            if ll not in wrestler_map and not skipped:
+            if ll not in wrestler_map:
+                # assumed to be jobber, skipped
+                if skipped:
+                    continue
                 print("Not in the roster:", ll)
                 exit()
 
             loser_team.append(wrestler_map[ll])
 
         loser_wrestlers.append(loser_team)
-        loser_ratings.append(sum([w.rating for w in loser_team]) / float(len(loser_team)))
+        if len(loser_team) > 0:
+            loser_ratings.append(sum([w.rating for w in loser_team]) / float(len(loser_team)))
+        else:
+            loser_ratings.append(0)
 
     return loser_wrestlers, loser_ratings
 
@@ -105,7 +114,7 @@ def update_from_episode(episode_file: str, wrestler_map: Mapping[str, Wrestler])
             winners = list(map(lambda x: x.strip(), winners.split("&")))
             winner_entity, winner_rating = extract_winner(winners, wrestler_map)
             
-            skipped = r["skipped"] == 1
+            skipped = int(r["skipped"]) == 1
             loser_entities, loser_ratings = extract_losers(losers, wrestler_map, skipped)
 
             # Update total match
@@ -135,13 +144,17 @@ def dump_latest_rating(latest_rating: Mapping[str, Wrestler]):
     for _, w in latest_rating.items():
         wrestlers.append(w)
 
-    wrestlers = sorted(wrestlers, key= lambda w: (w.brand, -w.rating, w.name))
+    wrestlers = sorted(wrestlers, key= lambda w: (w.brand, -w.rating, -w.total, -w.win, w.loss, w.name))
 
     with open(LATEST_RATING_CSV, "w") as f:
         writer = csv.writer(f)
         writer.writerow(["name", "rating", "brand", "win", "loss", "total"])
         rows = [(w.name, w.rating, w.brand, w.win, w.loss, w.total) for w in wrestlers]
         writer.writerows(rows)
+
+    archive_file = "archive/%s.%s" % (LATEST_RATING_CSV, datetime.today().strftime("%Y%m%d"))
+    copyfile(LATEST_RATING_CSV, archive_file)
+    
 
 
 # Usage: python script.py episode.csv
