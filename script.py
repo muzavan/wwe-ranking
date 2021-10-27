@@ -145,14 +145,14 @@ def dump_latest_rating(latest_rating: Mapping[str, Wrestler]):
 
     wrestlers = sorted(wrestlers, key= lambda w: (w.brand, -w.rating, -w.total, -w.win, w.loss, w.name))
 
-    with open(LATEST_RATING_CSV+".new", "w") as f:
+    with open(LATEST_RATING_CSV, "w") as f:
         writer = csv.writer(f)
         writer.writerow(["name", "rating", "brand", "win", "loss", "total"])
         rows = [(w.name, w.rating, w.brand, w.win, w.loss, w.total) for w in wrestlers]
         writer.writerows(rows)
 
-    # archive_file = "archive/%s.%s" % (LATEST_RATING_CSV, datetime.today().strftime("%Y%m%d"))
-    # copyfile(LATEST_RATING_CSV, archive_file)
+    archive_file = "archive/%s.%s" % (LATEST_RATING_CSV, datetime.today().strftime("%Y%m%d"))
+    copyfile(LATEST_RATING_CSV, archive_file)
     
 
 
