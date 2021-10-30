@@ -33,7 +33,7 @@ class Result(IntEnum):
     def score(self) -> float:
         return float(self) / float(Result.WIN)
 
-K_FACTOR = 30
+K_FACTOR = 10
 
 def to_2_decimal(fl: float):
     return float(f"{fl:.2f}")
