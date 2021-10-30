@@ -152,7 +152,7 @@ def dump_latest_rating(latest_rating: Mapping[str, Wrestler], last_episode: str)
     for _, w in latest_rating.items():
         wrestlers.append(w)
 
-    wrestlers = sorted(wrestlers, key= lambda w: (w.brand, -w.rating, -w.total, -w.win, w.loss, w.name))
+    wrestlers = sorted(wrestlers, key= lambda w: (-float(w.rating), w.brand, -int(w.total), -int(w.win), w.name, w.loss))
 
     with open(LATEST_RATING_CSV, "w") as f:
         writer = csv.writer(f)
