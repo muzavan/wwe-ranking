@@ -1,8 +1,11 @@
 import csv
+import dataclasses
 from dataclasses import dataclass
 from datetime import datetime
 from enum import IntEnum
+import json
 import math
+import os
 from shutil import copyfile
 import sys
 from typing import List, Mapping, Tuple
@@ -15,6 +18,12 @@ class Wrestler:
     win: int
     loss: int
     total: int
+
+class WrestlerEncoder(json.JSONEncoder):
+    def default(self, o):
+        if dataclasses.is_dataclass(o):
+            return dataclasses.asdict(o)
+        return super().default(o)
 
 class Result(IntEnum):
     LOSE = 0
@@ -138,7 +147,7 @@ def update_from_episode(episode_file: str, wrestler_map: Mapping[str, Wrestler])
                 for ll in l_entity:
                     update_wrestler(ll, lrating, (total_rating - lrating) / opponent_num, Result.LOSE)
 
-def dump_latest_rating(latest_rating: Mapping[str, Wrestler]):
+def dump_latest_rating(latest_rating: Mapping[str, Wrestler], last_episode: str):
     wrestlers = []
     for _, w in latest_rating.items():
         wrestlers.append(w)
@@ -153,6 +162,19 @@ def dump_latest_rating(latest_rating: Mapping[str, Wrestler]):
 
     archive_file = "archive/%s.%s" % (LATEST_RATING_CSV, datetime.today().strftime("%Y%m%d"))
     copyfile(LATEST_RATING_CSV, archive_file)
+
+    last_episode_name = os.path.basename(last_episode)
+    parts = last_episode_name.split("_")
+    last_episode_name = parts[1][:-4] + " ( " + datetime.strptime(parts[0], "%Y%m%d").strftime("%d-%B-%Y") + " )"
+    data = {
+        "ratings": list(latest_rating.values()),
+        "last_episode": last_episode_name,
+    }
+
+    with open("latest_rating.js", "w") as f:
+        js = json.dumps(data, cls=WrestlerEncoder)
+        f.write(f"var data = {js};")
+    
     
 
 
@@ -169,7 +191,7 @@ if __name__ == "__main__":
         print("Process episode:", episode)
         update_from_episode(episode, latest_rating)
 
-    dump_latest_rating(latest_rating)
+    dump_latest_rating(latest_rating, episode_files[-1])
     print("Done!")
 
 
