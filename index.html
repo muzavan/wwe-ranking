@@ -1,0 +1,57 @@
+<html>
+
+<head>
+    <title>
+        WWE Superstar Rating
+    </title>
+</head>
+<!-- Compiled and minified CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
+<!-- Compiled and minified JavaScript -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.css">
+
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.js"></script>
+
+<body>
+    <div class="container center-align">
+        <h2>WWE Superstar Rating</h2>
+        Data Update per <b id="lastUpdated"></b>
+        <div>
+            <a class="waves-effect waves-light btn-small black darken-3 white-text" onclick="zall()">ALL</a>
+        <a class="waves-effect waves-light btn-small red darken-3 white-text" onclick="raw()">RAW</a>
+        <a class="waves-effect waves-light btn-small blue darken-3 white-text" onclick="smackdown()">Smackdown</a>
+
+        <div class="switch">
+            Show wrestler without any match?
+            <label>
+              No
+              <input type="checkbox" id="withoutMatch" checked>
+              <span class="lever"></span>
+              Yes
+            </label>
+          </div>
+            </div>
+        
+        <table id="ranks" class="highlight responsive-table centered">
+            <thead>
+                <th> # </td>
+                <th> Name </th>
+                <th> Rating </th>
+                <th> Brand </th>
+                <th> Win </th>
+                <th> Loss </th>
+                <th> Total Match </th>
+            </thead>
+            <tbody id="ranks-body">
+            </tbody>
+        </table>
+    </div>
+
+    <script src="latest_rating.js"></script>
+    <script src="index.js"></script>
+</body>
+
+</html>
