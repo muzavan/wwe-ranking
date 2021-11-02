@@ -35,9 +35,19 @@ function smackdown() {
 
 function renderData(ratings) {
     let tbodyElm = document.getElementById("ranks-body");
+    var rank = 0;
+    var buffer = 0;
+    var prevValue = 0;
     let trs = ratings.map(({name, rating, brand, win, loss, total}, idx) => {
+        if (rating != prevValue) {
+            rank = rank + buffer + 1;
+            buffer = 0;
+            prevValue = rating;
+        } else {
+            buffer++;
+        }
         return `<tr>
-            <td>${idx+1}</td>
+            <td>${rank}</td>
             <td>${name}</td>
             <td>${rating}</td>
             <td><span class="white-text badge ${brand == "RAW" ? "red" : "blue"} darken-3" data-badge-caption="${brand}"></span></td>
