@@ -7,6 +7,9 @@
 </head>
 <!-- Compiled and minified CSS -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css" integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" crossorigin="anonymous">
+
+<script src="https://kit.fontawesome.com/30a5fcaf85.js" crossorigin="anonymous"></script>
 
 <!-- Compiled and minified JavaScript -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
@@ -17,14 +20,17 @@
 
 <body>
     <div class="container center-align">
-        <h2>WWE Superstar Rating</h2>
-        Data Update per <b id="lastUpdated"></b>
-        <div>
+        <div class="row">
+            <h2>WWE Superstar Rating</h2>
+            Data Update per <b id="lastUpdated"></b>
+        </div>
+        
+        <div class="row">
             <a class="waves-effect waves-light btn-small black darken-3 white-text" onclick="zall()">ALL</a>
-        <a class="waves-effect waves-light btn-small red darken-3 white-text" onclick="raw()">RAW</a>
-        <a class="waves-effect waves-light btn-small blue darken-3 white-text" onclick="smackdown()">Smackdown</a>
-
-        <div class="switch">
+            <a class="waves-effect waves-light btn-small red darken-3 white-text" onclick="raw()">RAW</a>
+            <a class="waves-effect waves-light btn-small blue darken-3 white-text" onclick="smackdown()">Smackdown</a>
+        </div>
+        <div class="switch row">
             Show wrestler without any match?
             <label>
               No
@@ -32,10 +38,9 @@
               <span class="lever"></span>
               Yes
             </label>
-          </div>
-            </div>
+        </div>
         
-        <table id="ranks" class="highlight responsive-table centered">
+        <table id="ranks" class="highlight centered">
             <thead>
                 <th> # </td>
                 <th> Name </th>
@@ -48,6 +53,12 @@
             <tbody id="ranks-body">
             </tbody>
         </table>
+
+        <br/>
+
+        <div class="row">
+           By <a href="https://twitter.com/bergulatID"><i class="fa fa-twitter"></i>@bergulatID</a> | <a href="https://github.com/muzavan/wwe-ranking#assumption-and-rule">How are the rating determined?</a> | Star on <a href="http://github.com/muzavan/wwe-ranking"><i class="fa fa-github"></i></a>
+        </div>
     </div>
 
     <script src="latest_rating.js"></script>

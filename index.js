@@ -1,6 +1,27 @@
 var selBrand = "all";
 var withoutMatch = true;
 
+// TODO: Find a better way to manage this
+const champions = [
+    "Roman Reigns",
+    "Jimmy Uso",
+    "Jey Uso",
+    "Shinsuke Nakamura",
+    "Charlotte Flair",
+    "Xavier Woods",
+    "Big E",
+    "Damian Priest",
+    "Randy Orton",
+    "Riddle",
+    "Zelina Vega",
+    "Becky Lynch",
+];
+
+const champs = new Set();
+champions.forEach(element => {
+    champs.add(element);
+});
+
 let lastUpdatedElm = document.getElementById("lastUpdated");
 lastUpdatedElm.textContent = data.last_episode;
 
@@ -38,6 +59,8 @@ function renderData(ratings) {
     var rank = 0;
     var buffer = 0;
     var prevValue = 0;
+
+    const crown = ` <i class="fa fa-crown yellow-text text-darken-3"></i>`;
     let trs = ratings.map(({name, rating, brand, win, loss, total}, idx) => {
         if (rating != prevValue) {
             rank = rank + buffer + 1;
@@ -45,6 +68,10 @@ function renderData(ratings) {
             prevValue = rating;
         } else {
             buffer++;
+        }
+
+        if (champs.has(name)) {
+            name += crown;
         }
         return `<tr>
             <td>${rank}</td>
