@@ -167,7 +167,7 @@ def dump_latest_rating(latest_rating: Mapping[str, Wrestler], last_episode: str)
     parts = last_episode_name.split("_")
     last_episode_name = parts[1][:-4] + " ( " + datetime.strptime(parts[0], "%Y%m%d").strftime("%d-%B-%Y") + " )"
     data = {
-        "ratings": list(latest_rating.values()),
+        "ratings": wrestlers,
         "last_episode": last_episode_name,
     }
 
